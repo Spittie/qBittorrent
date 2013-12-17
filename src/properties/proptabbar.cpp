@@ -62,6 +62,10 @@ PropTabBar::PropTabBar(QWidget *parent) :
   QPushButton *files_button = new QPushButton(IconProvider::instance()->getIcon("inode-directory"), tr("Content"), parent);
   addWidget(files_button);
   m_btnGroup->addButton(files_button, FILES_TAB);
+  // Graph tab
+  QPushButton *graph_button = new QPushButton(IconProvider::instance()->getIcon("inode-directory"), tr("Graph"), parent);
+  addWidget(graph_button);
+  m_btnGroup->addButton(graph_button, GRAPH_TAB);
   // Spacer
   addItem(new QSpacerItem(40, 20, QSizePolicy::Expanding, QSizePolicy::Minimum));
   // SIGNAL/SLOT

@@ -185,6 +185,7 @@ MainWindow::MainWindow(QWidget *parent, const QStringList& torrentCmdLine) : QMa
   // Transfer List tab
   transferList = new TransferListWidget(hSplitter, this, QBtSession::instance());
   properties = new PropertiesWidget(hSplitter, this, transferList);
+
   transferListFilters = new TransferListFiltersWidget(vSplitter, transferList);
   hSplitter->addWidget(transferList);
   hSplitter->addWidget(properties);
@@ -195,6 +196,10 @@ MainWindow::MainWindow(QWidget *parent, const QStringList& torrentCmdLine) : QMa
   tabs->addTab(vSplitter, IconProvider::instance()->getIcon("folder-remote"), tr("Transfers"));
 
   vboxLayout->addWidget(tabs);
+
+  // Init the graph
+  properties->initGraph();
+
   // Name filter
   search_filter = new LineEdit();
   connect(search_filter, SIGNAL(textChanged(QString)), transferList, SLOT(applyNameFilter(QString)));
@@ -1147,6 +1152,7 @@ void MainWindow::trackerAuthenticationRequired(const QTorrentHandle& h) {
 
 // Check connection status and display right icon
 void MainWindow::updateGUI() {
+
   // update global informations
   if (systrayIcon) {
 #if defined(Q_WS_X11) || defined(Q_WS_MAC)
@@ -1177,6 +1183,7 @@ void MainWindow::updateGUI() {
   else if (displaySpeedInTitle && !displayVersionInTitle) {
       setWindowTitle(tr("[D: %1/s, U: %2/s] qBittorrent", "D = Download; U = Upload").arg(misc::friendlyUnit(QBtSession::instance()->getSessionStatus().payload_download_rate)).arg(misc::friendlyUnit(QBtSession::instance()->getSessionStatus().payload_upload_rate)));
   }
+  properties->updateGraph(QBtSession::instance()->getSessionStatus().payload_download_rate,QBtSession::instance()->getSessionStatus().payload_upload_rate);
 }
 
 void MainWindow::showNotificationBaloon(QString title, QString msg) const {

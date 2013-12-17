@@ -716,6 +716,18 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="page_2">
+      <widget class="QCustomPlot" name="speedGraph" native="true">
+       <property name="geometry">
+        <rect>
+         <x>10</x>
+         <y>10</y>
+         <width>531</width>
+         <height>431</height>
+        </rect>
+       </property>
+      </widget>
+     </widget>
     </widget>
    </item>
    <item>
@@ -749,7 +761,23 @@
     <string>Do not download</string>
    </property>
   </action>
+  <action name="actionInsert_Plot">
+   <property name="text">
+    <string>Insert Plot</string>
+   </property>
+   <property name="toolTip">
+    <string>Insert Plot</string>
+   </property>
+  </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QCustomPlot</class>
+   <extends>QWidget</extends>
+   <header>qcustomplot.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

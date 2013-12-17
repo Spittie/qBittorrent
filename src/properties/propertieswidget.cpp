@@ -144,6 +144,30 @@ PropertiesWidget::~PropertiesWidget() {
   qDebug() << Q_FUNC_INFO << "EXIT";
 }
 
+void PropertiesWidget::updateGraph(qreal down, qreal up) {
+    qWarning() << down << "-" << up;
+    double now = QDateTime::currentDateTime().toTime_t();
+    speedGraph->graph(0)->addData(now, down);
+    speedGraph->graph(1)->addData(now, up);
+    speedGraph->rescaleAxes();
+    speedGraph->yAxis->setRangeLower(0);
+    speedGraph->replot();
+}
+
+void PropertiesWidget::initGraph() {
+    speedGraph->addGraph();
+    speedGraph->addGraph();
+    speedGraph->xAxis->setLabel("Time");
+    speedGraph->yAxis->setLabel("Speed");
+    speedGraph->xAxis->setTickLabelType(QCPAxis::ltDateTime);
+    speedGraph->xAxis->setDateTimeFormat("mm:ss");
+    speedGraph->graph(0)->setBrush(QBrush(QColor(0, 0, 255, 20)));
+    speedGraph->graph(0)->setPen(QPen(Qt::blue));
+    speedGraph->graph(1)->setBrush(QBrush(QColor(255, 0, 0, 20)));
+    speedGraph->graph(1)->setPen(QPen(Qt::red));
+    speedGraph->yAxis->setRangeLower(0);
+}
+
 void PropertiesWidget::showPiecesAvailability(bool show) {
   avail_pieces_lbl->setVisible(show);
   pieces_availability->setVisible(show);

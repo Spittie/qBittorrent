@@ -97,6 +97,8 @@ public slots:
   void reloadPreferences();
   void openDoubleClickedFile(QModelIndex);
   void updateSavePath(const QTorrentHandle& h);
+  void initGraph();
+  void updateGraph(qreal down, qreal up);
 
 private:
   TransferListWidget *transferList;

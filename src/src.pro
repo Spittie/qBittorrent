@@ -150,7 +150,8 @@ nox {
               loglistwidget.h \
               addnewtorrentdialog.h \
               autoexpandabledialog.h \
-              statsdialog.h
+              statsdialog.h \
+              qcustomplot.h
 
   SOURCES += mainwindow.cpp \
              ico.cpp \
@@ -169,7 +170,8 @@ nox {
              loglistwidget.cpp \
              addnewtorrentdialog.cpp \
              autoexpandabledialog.cpp \
-             statsdialog.cpp
+             statsdialog.cpp \
+             qcustomplot.cpp
 
   win32 {
     HEADERS += programupdater.h
