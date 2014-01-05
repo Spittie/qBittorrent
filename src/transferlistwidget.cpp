@@ -127,6 +127,17 @@ TransferListWidget::TransferListWidget(QWidget *parent, MainWindow *main_window,
     setColumnHidden(TorrentModelItem::TR_SAVE_PATH, true);
   }
 
+  //Ensure that at least one column is visible at all times
+  bool atLeastOne = false;
+  for (unsigned int i=0; i<TorrentModelItem::NB_COLUMNS; i++) {
+    if (!isColumnHidden(i)) {
+      atLeastOne = true;
+      break;
+    }
+  }
+  if (!atLeastOne)
+    setColumnHidden(TorrentModelItem::TR_NAME, false);
+
   //When adding/removing columns between versions some may
   //end up being size 0 when the new version is launched with
   //a conf file from the previous version.
@@ -558,11 +569,23 @@ void TransferListWidget::displayDLHoSMenu(const QPoint&) {
     myAct->setChecked(!isColumnHidden(i));
     actions.append(myAct);
   }
+  int visibleCols = 0;
+  for (unsigned int i=0; i<TorrentModelItem::NB_COLUMNS; i++) {
+    if (!isColumnHidden(i))
+      visibleCols++;
+
+    if (visibleCols > 1)
+      break;
+  }
+
   // Call menu
   QAction *act = hideshowColumn.exec(QCursor::pos());
   if (act) {
     int col = actions.indexOf(act);
     Q_ASSERT(col >= 0);
+    Q_ASSERT(visibleCols > 0);
+    if (!isColumnHidden(col) && visibleCols == 1)
+      return;
     qDebug("Toggling column %d visibility", col);
     setColumnHidden(col, !isColumnHidden(col));
     if (!isColumnHidden(col) && columnWidth(col) <= 5)
@@ -575,7 +598,7 @@ void TransferListWidget::toggleSelectedTorrentsSuperSeeding() const {
   foreach (const QString &hash, hashes) {
     QTorrentHandle h = BTSession->getTorrentHandle(hash);
     if (h.is_valid() && h.has_metadata()) {
-      h.super_seeding(!h.super_seeding());
+      h.super_seeding(!h.status(0).super_seeding);
     }
   }
 }
@@ -747,9 +770,9 @@ void TransferListWidget::displayListMenu(const QPoint&) {
     else {
       if (!one_not_seed && all_same_super_seeding && h.has_metadata()) {
         if (first) {
-          super_seeding_mode = h.super_seeding();
+          super_seeding_mode = h.status(0).super_seeding;
         } else {
-          if (super_seeding_mode != h.super_seeding()) {
+          if (super_seeding_mode != h.status(0).super_seeding) {
             all_same_super_seeding = false;
           }
         }

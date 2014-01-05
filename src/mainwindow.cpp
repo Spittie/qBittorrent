@@ -114,7 +114,7 @@ MainWindow::MainWindow(QWidget *parent, const QStringList& torrentCmdLine) : QMa
   else
     setWindowTitle(QString("qBittorrent"));
   // Clean exit on log out
-  connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(deleteBTSession()), Qt::DirectConnection);
+  connect(qApp, SIGNAL(aboutToQuit()), this, SLOT(shutdownCleanUp()), Qt::DirectConnection);
   // Setting icons
 #if defined(Q_WS_X11)
   if (Preferences().useSystemIconTheme())
@@ -346,19 +346,15 @@ MainWindow::MainWindow(QWidget *parent, const QStringList& torrentCmdLine) : QMa
   }
 }
 
-void MainWindow::deleteBTSession() {
-  guiUpdater->stop();
-  status_bar->stopTimer();
-  QBtSession::drop();
-  m_pwr->setActivityState(false);
-  // Save window size, columns size
-  writeSettings();
-}
-
-// Destructor
-MainWindow::~MainWindow() {
+void MainWindow::shutdownCleanUp() {
   qDebug("GUI destruction");
   hide();
+  guiUpdater->stop();
+  status_bar->stopTimer();
+  m_pwr->setActivityState(false);
+  QBtSession::drop();
+  // Save window size, columns size
+  writeSettings();
 #ifdef Q_WS_MAC
   // Workaround to avoid bug http://bugreports.qt.nokia.com/browse/QTBUG-7305
   setUnifiedTitleAndToolBarOnMac(false);
@@ -391,15 +387,12 @@ MainWindow::~MainWindow() {
   delete properties;
   delete hSplitter;
   delete vSplitter;
-  if (systrayCreator) {
+  if (systrayCreator)
     delete systrayCreator;
-  }
-  if (systrayIcon) {
+  if (systrayIcon)
     delete systrayIcon;
-  }
-  if (myTrayIconMenu) {
+  if (myTrayIconMenu)
     delete myTrayIconMenu;
-  }
   delete tabs;
   // Keyboard shortcuts
   delete switchSearchShortcut;
@@ -407,7 +400,8 @@ MainWindow::~MainWindow() {
   delete switchTransferShortcut;
   delete switchRSSShortcut;
   IconProvider::drop();
-  qDebug("Exiting GUI destructor...");
+  Preferences().sync();
+  qDebug("Finished GUI destruction");
 }
 
 void MainWindow::defineUILockPassword() {
@@ -1188,15 +1182,22 @@ void MainWindow::showNotificationBaloon(QString title, QString msg) const {
   org::freedesktop::Notifications notifications("org.freedesktop.Notifications",
                                                 "/org/freedesktop/Notifications",
                                                 QDBusConnection::sessionBus());
-  if (notifications.isValid()) {
-    QVariantMap hints;
-    hints["desktop-entry"] = "qBittorrent";
-    QDBusPendingReply<uint> reply = notifications.Notify("qBittorrent", 0, "qbittorrent", title,
-                                                         msg, QStringList(), hints, -1);
-    reply.waitForFinished();
-    if (!reply.isError())
-      return;
-  }
+  // Testing for 'notifications.isValid()' isn't helpful here.
+  // If the notification daemon is configured to run 'as needed'
+  // the above check can be false if the daemon wasn't started
+  // by another application. In this case DBus will be able to
+  // start the notification daemon and complete our request. Such
+  // a daemon is xfce4-notifyd, DBus autostarts it and after
+  // some inactivity shuts it down. Other DEs, like GNOME, choose
+  // to start their daemons at the session startup and have it sit
+  // idling for the whole session.
+  QVariantMap hints;
+  hints["desktop-entry"] = "qBittorrent";
+  QDBusPendingReply<uint> reply = notifications.Notify("qBittorrent", 0, "qbittorrent", title,
+                                                       msg, QStringList(), hints, -1);
+  reply.waitForFinished();
+  if (!reply.isError())
+    return;
 #endif
   if (systrayIcon && QSystemTrayIcon::supportsMessages())
     systrayIcon->showMessage(title, msg, QSystemTrayIcon::Information, TIME_TRAY_BALLOON);
