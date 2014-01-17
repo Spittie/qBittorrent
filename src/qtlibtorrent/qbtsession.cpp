@@ -122,7 +122,7 @@ QBtSession::QBtSession()
   // Creating Bittorrent session
   QList<int> version;
   version << VERSION_MAJOR;
-  version << VERSION_MINOR;
+  version << 1;
   version << VERSION_BUGFIX;
   version << 0;
   const QString peer_id = "qB";
